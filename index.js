@@ -21,7 +21,7 @@ const getError = (status, err) => {
   return false;
 }
 
-const downLoadFile = (data, dataLen) => {
+const downloadFile = (data, dataLen) => {
   https.get(getDownloadURL(data, dataLen), async res => {
     if (getError(res.statusCode, 'Cannot download file')) return;
     const fileName = await getFileName(data, dataLen);
@@ -32,7 +32,7 @@ const downLoadFile = (data, dataLen) => {
 }
 
 //download 1 file
-const url = 'jmBzjA4pcTQ'; //process.argv[2];
+const url = 'eAauqaT5XZ8'; //process.argv[2];
 https.get(`https://www.320youtube.com/v6/watch?v=${url}`, res => {
   if (getError(res.statusCode, 'Cannot GET 320youtube.com')) return;
 
@@ -44,6 +44,6 @@ https.get(`https://www.320youtube.com/v6/watch?v=${url}`, res => {
 
   res.on('end', () => {
     const dataLen = data.length;
-    downLoadFile(data, dataLen);
+    downloadFile(data, dataLen);
   });
 });
