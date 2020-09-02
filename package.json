@@ -1,0 +1,11 @@
+{
+  "name": "ytmp3",
+  "version": "1.0.0",
+  "description": "Youtube 320kbps mp3 downloader",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brian Doan",
+  "license": "ISC"
+}
