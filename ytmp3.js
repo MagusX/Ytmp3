@@ -31,8 +31,28 @@ const throttleDownload = (urls, max=4) => {
   }
 }
 
-const maxDownloads = 4;
-getURLs('PLtMGvj8XVUwZBkOisPXcWAnKIXYEAyOdo')
-.then(urls => {
-  throttleDownload(urls, maxDownloads);
-});
+const downloadList = playlistId => {
+  getURLs(playlistId)
+  .then(urls => {
+    const maxDownloads = 4;
+    throttleDownload(urls, maxDownloads);
+  });
+}
+
+(() => {
+  const args = process.argv;
+  const argsLen = process.argv.length;
+  switch (argsLen) {
+    case 3:
+      downloadSingle(args[2])
+      break;
+    case 4: {
+      if (args[2] === '--list')
+      downloadList(args[3]);
+      break;
+    }
+    default:
+      console.log('Invalid arguments');
+      break;
+  }
+})();
