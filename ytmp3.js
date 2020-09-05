@@ -33,8 +33,8 @@ const throttleDownload = (urls, max=4, progressPool) => {
   }
 }
 
-const downloadList = (playlistId, progressPool) => {
-  getURLs(playlistId)
+const downloadList = (playlistId, progressPool, range) => {
+  getURLs(playlistId, range)
   .then(urls => {
     const maxDownloads = 4;
     throttleDownload(urls, maxDownloads, progressPool);
@@ -69,6 +69,12 @@ downloadEvent.on('downloading', (progressPool) => {
       if (args[2] === '--list') {
         downloadList(args[3], progressPool);
       }
+      break;
+    } case 6: {
+      if (args[2] === '--list' && args[4] === '-r') {
+        const [_start, _stop] = args[5].split(',');
+        downloadList(args[3], progressPool, {start: _start, stop: _stop});
+      } 
       break;
     }
     default:

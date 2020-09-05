@@ -40,7 +40,7 @@ const downloadFile = (data, dataLen, progressPool) => {
   https.get(getDownloadURL(data, dataLen), async res => {
     if (getError(res.statusCode, 'Cannot download file')) return;
     const fileName = getFileName(data, dataLen);
-    const path = `test3/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+    const path = `test5/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
     fs.closeSync(fs.openSync(path, 'w'));
     let mp3File = fs.createWriteStream(path);
     res.pipe(mp3File);

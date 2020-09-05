@@ -1,11 +1,20 @@
 const https = require('https');
 
-const parseURLs = (items, URLs) => {
+const verifyRange = (items, range) => {
+  let { start, stop } = (typeof(range) === 'object') ? range : {start: 0, stop: items.length};
+  start = (start === '') ? 0 : parseInt(start, 10);
+  stop = (stop === '') ? items.length : parseInt(stop, 10);
+  return [start, stop];
+}
+
+const parseURLs = (items, URLs, range) => {
+  const [start, stop] = verifyRange(items, range);
   items.forEach(video => {
-    if (video.snippet.title !== 'Private video') {
+    const { title, position, resourceId } = video.snippet;
+    if (title !== 'Private video' && position >= start && position <= stop) {
       URLs.push({
-        id: video.snippet.resourceId.videoId,
-        index: video.snippet.position
+        id:resourceId.videoId,
+        index: position
       });
     }
   });
@@ -22,7 +31,7 @@ const getPageToken = apiRes => {
   return (typeof(apiRes) !== 'undefined' && apiRes.hasOwnProperty('nextPageToken')) ? apiRes.nextPageToken : '';
 }
 
-const getAPIRes = async (playlistId, prevApiRes, api_key, URLs) => {
+const getAPIRes = async (playlistId, prevApiRes, api_key, URLs, range) => {
   return new Promise((resolve, reject) => {
     https.get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${api_key}&maxResults=50&pageToken=${getPageToken(prevApiRes)}`, res => {
       res.setEncoding('utf-8');
@@ -34,7 +43,7 @@ const getAPIRes = async (playlistId, prevApiRes, api_key, URLs) => {
 
       res.on('end', async () => {
         apiRes = await JSON.parse(data);
-        parseURLs(apiRes.items, URLs)
+        parseURLs(apiRes.items, URLs, range)
         .then(msg => {
           resolve(apiRes);
         })
@@ -47,12 +56,12 @@ const getAPIRes = async (playlistId, prevApiRes, api_key, URLs) => {
 }
 
 module.exports = {
-  getURLs: async playlistId => {
+  getURLs: async (playlistId, range) => {
     let URLs = [];
     let apiRes;
     const api_key = 'AIzaSyCPuak_xz0_qEyST0yj9T0DIFkUtBhfCuo';
     while (true) {
-      apiRes = await getAPIRes(playlistId, apiRes, api_key, URLs);
+      apiRes = await getAPIRes(playlistId, apiRes, api_key, URLs, range);
       if (!apiRes.hasOwnProperty('nextPageToken')) return URLs;
     }
   }
