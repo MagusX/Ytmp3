@@ -1,5 +1,7 @@
 const { getURLs } = require('./listURLs');
 const { downloadEvent, downloadSingle } = require('./singleFile');
+const logUpdate = require('log-update');
+
 
 //algorithm:
 /*
@@ -16,39 +18,57 @@ function(url, max):
   }
 */
 
-const throttleDownload = (urls, max=4) => {
+const throttleDownload = (urls, max=4, progressPool) => {
   const len = urls.length;
   let tail = (len <= max) ? len : max;
 
   downloadEvent.on('completed', () => {
     if (tail != len) {
-      downloadSingle(urls[tail++].id);
+      downloadSingle(urls[tail++].id, progressPool);
     }
   })
 
   for (let i = 0; i < tail; i++) {
-    downloadSingle(urls[i].id);
+    downloadSingle(urls[i].id, progressPool);
   }
 }
 
-const downloadList = playlistId => {
+const downloadList = (playlistId, progressPool) => {
   getURLs(playlistId)
   .then(urls => {
     const maxDownloads = 4;
-    throttleDownload(urls, maxDownloads);
+    throttleDownload(urls, maxDownloads, progressPool);
   });
 }
 
+
+downloadEvent.on('downloading', (progressPool) => {
+  let log = '';
+  for(let [key, value] of progressPool) {
+    let {current, total} = value;
+    if (current - total == 0.01 || total - current == 0.01) {
+      log += `${key} [${total}/${total}] 100%\n`;
+    } else {
+      log += `${key} [${current}/${total}] ${Math.floor((current / total) * 100)}%\n`;
+    }
+  }
+  logUpdate(log);
+});
+
 (() => {
+  // {id: filename, {total: , current: }}
+  console.log('*Disclaimer: possible 1% data loss*');
+  let progressPool = new Map();
   const args = process.argv;
   const argsLen = process.argv.length;
   switch (argsLen) {
     case 3:
-      downloadSingle(args[2])
+      downloadSingle(args[2], progressPool);
       break;
     case 4: {
-      if (args[2] === '--list')
-      downloadList(args[3]);
+      if (args[2] === '--list') {
+        downloadList(args[3], progressPool);
+      }
       break;
     }
     default:

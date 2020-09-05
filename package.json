@@ -8,5 +8,7 @@
   },
   "author": "Brian Doan",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "log-update": "^4.0.0"
+  }
 }

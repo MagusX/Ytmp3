@@ -10,11 +10,23 @@ const getDownloadURL = (data, len) => {
   return data.substring(urlStartIndex, urlEndIndex);
 }
 
-const getFileName = (data, len) => {
-  const nameStartIndex = data.indexOf('Title:') + 11;
-  const nameEndIndex = nameStartIndex + data.substring(nameStartIndex, len).indexOf('</p>');
-  return data.substring(nameStartIndex, nameEndIndex);
+const parseValue = (field, offset, data, len) => {
+  const startIndex = data.indexOf(field) + offset;
+  const endIndex = startIndex + data.substring(startIndex, len).indexOf('</p>');
+  return data.substring(startIndex, endIndex);
 }
+
+const getFileName = (data, len) => (
+  parseValue('Title:', 11, data, len)
+)
+
+const getFileSize = (data, len) => (
+  parseFloat(parseValue('Size:', 10, data, len))
+)
+
+const bytesToMB = bytes => (
+  (bytes / 1048576).toFixed(2)
+)
 
 const getError = (status, err) => {
   if (status !== 200) {
@@ -24,21 +36,26 @@ const getError = (status, err) => {
   return false;
 }
 
-const downloadFile = (data, dataLen) => {
-  https.get(getDownloadURL(data, dataLen), res => {
+const downloadFile = (data, dataLen, progressPool) => {
+  https.get(getDownloadURL(data, dataLen), async res => {
     if (getError(res.statusCode, 'Cannot download file')) return;
     const fileName = getFileName(data, dataLen);
-    const path = `test/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+    const path = `test3/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
     fs.closeSync(fs.openSync(path, 'w'));
     let mp3File = fs.createWriteStream(path);
     res.pipe(mp3File);
     
+    let total = getFileSize(data, dataLen);
     let size = 0;
-    res.on('data', chunk => {
+    res.on('data', async chunk => {
       size += chunk.length;
+      await progressPool.set(fileName, {
+        total: total,
+        current: bytesToMB(size)
+      });
+      event.emit('downloading', progressPool);
     });
     res.on('end', () => {
-      console.log(`${fileName} COMPLETED. SIZE: ${size} BYTES`);
       event.emit('completed');
     });
   });
@@ -47,8 +64,7 @@ const downloadFile = (data, dataLen) => {
 //download 1 file
 module.exports = {
   downloadEvent: event,
-  downloadSingle: id => {
-    console.log(id);
+  downloadSingle: (id, progress) => {
     https.get(`https://www.320youtube.com/v6/watch?v=${id}`, res => {
       if (getError(res.statusCode, 'Cannot GET 320youtube.com')) return;
     
@@ -60,7 +76,7 @@ module.exports = {
     
       res.on('end', () => {
         const dataLen = data.length;
-        downloadFile(data, dataLen);
+        downloadFile(data, dataLen, progress);
       });
     });
   }
