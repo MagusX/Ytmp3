@@ -40,7 +40,7 @@ const downloadFile = (data, dataLen, progressPool) => {
   https.get(getDownloadURL(data, dataLen), async res => {
     if (getError(res.statusCode, 'Cannot download file')) return;
     const fileName = getFileName(data, dataLen);
-    const path = `test5/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+    const path = `D:/Music/M83/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
     fs.closeSync(fs.openSync(path, 'w'));
     let mp3File = fs.createWriteStream(path);
     res.pipe(mp3File);
@@ -65,19 +65,26 @@ const downloadFile = (data, dataLen, progressPool) => {
 module.exports = {
   downloadEvent: event,
   downloadSingle: (id, progress) => {
-    https.get(`https://www.320youtube.com/v6/watch?v=${id}`, res => {
-      if (getError(res.statusCode, 'Cannot GET 320youtube.com')) return;
-    
-      let data = '';
-      res.setEncoding('utf-8');
-      res.on('data', chunk => {
-        data += chunk;
+    try {
+      https.get(`https://www.320youtube.com/v6/watch?v=${id}`, res => {
+        res.on('error', err => {
+          console.log(`Error with 320youtube id: ${err}`);
+        });
+        if (getError(res.statusCode, 'Cannot GET 320youtube.com')) return;
+      
+        let data = '';
+        res.setEncoding('utf-8');
+        res.on('data', chunk => {
+          data += chunk;
+        });
+      
+        res.on('end', () => {
+          const dataLen = data.length;
+          downloadFile(data, dataLen, progress);
+        });
       });
-    
-      res.on('end', () => {
-        const dataLen = data.length;
-        downloadFile(data, dataLen, progress);
-      });
-    });
+    } catch(err) {
+      console.log(`Error with 320youtube id: ${err}`);
+    }
   }
 };

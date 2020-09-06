@@ -1,29 +1,30 @@
 const https = require('https');
 
-const verifyRange = (items, range) => {
-  let { start, stop } = (typeof(range) === 'object') ? range : {start: 0, stop: items.length};
+const verifyRange = (totalResults, range) => {
+  let { start, stop } = (typeof(range) === 'object') ? range : {start: 0, stop: totalResults};
   start = (start === '') ? 0 : parseInt(start, 10);
-  stop = (stop === '') ? items.length : parseInt(stop, 10);
+  stop = (stop === '') ? totalResults : parseInt(stop, 10);
   return [start, stop];
 }
 
-const parseURLs = (items, URLs, range) => {
-  const [start, stop] = verifyRange(items, range);
-  items.forEach(video => {
-    const { title, position, resourceId } = video.snippet;
-    if (title !== 'Private video' && position >= start && position <= stop) {
-      URLs.push({
-        id:resourceId.videoId,
-        index: position
-      });
-    }
-  });
-
+const parseURLs = (apiRes, URLs, range) => {
   return new Promise((resolve, reject) => {
-    if (URLs.length !== 0) {
+    try {
+      const { items, pageInfo } = apiRes;
+      const [start, stop] = verifyRange(pageInfo.totalResults, range);
+      items.forEach(video => {
+        const { title, position, resourceId } = video.snippet;
+        if (title !== 'Private video' && position >= start && position <= stop) {
+          URLs.push({
+            id:resourceId.videoId,
+            index: position
+          });
+        }
+      });
       resolve('Valid');
+    } catch(err) {
+      reject(err);
     }
-    reject(new Error('Invalid'));
   });
 }
 
@@ -34,6 +35,9 @@ const getPageToken = apiRes => {
 const getAPIRes = async (playlistId, prevApiRes, api_key, URLs, range) => {
   return new Promise((resolve, reject) => {
     https.get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${api_key}&maxResults=50&pageToken=${getPageToken(prevApiRes)}`, res => {
+      res.on('error', err => {
+        console.log(`Error with googleapis url: ${err}`);
+      });
       res.setEncoding('utf-8');
       let data = '';
 
@@ -43,7 +47,7 @@ const getAPIRes = async (playlistId, prevApiRes, api_key, URLs, range) => {
 
       res.on('end', async () => {
         apiRes = await JSON.parse(data);
-        parseURLs(apiRes.items, URLs, range)
+        parseURLs(apiRes, URLs, range)
         .then(msg => {
           resolve(apiRes);
         })
@@ -62,7 +66,9 @@ module.exports = {
     const api_key = 'AIzaSyCPuak_xz0_qEyST0yj9T0DIFkUtBhfCuo';
     while (true) {
       apiRes = await getAPIRes(playlistId, apiRes, api_key, URLs, range);
-      if (!apiRes.hasOwnProperty('nextPageToken')) return URLs;
+      if (!apiRes.hasOwnProperty('nextPageToken')) {
+        return URLs;
+      }
     }
   }
 }
