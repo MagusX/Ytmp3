@@ -36,21 +36,16 @@ const throttleDownload = (urls, max=4, progressPool) => {
 const downloadList = (playlistId, progressPool, range) => {
   getURLs(playlistId, range)
   .then(urls => {
-    const maxDownloads = 4;
+    const maxDownloads = 3;
     throttleDownload(urls, maxDownloads, progressPool);
   });
 }
-
 
 downloadEvent.on('downloading', (progressPool) => {
   let log = '';
   for(let [key, value] of progressPool) {
     let {current, total} = value;
-    if (current - total == 0.01 || total - current == 0.01) {
-      log += `${key} [${total}/${total}] 100%\n`;
-    } else {
-      log += `${key} [${current}/${total}] ${Math.floor((current / total) * 100)}%\n`;
-    }
+    log += `${key} [${current}/${total}] ${Math.floor((current / total) * 100)}%\n`;
   }
   logUpdate(log);
 });
