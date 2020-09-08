@@ -1,7 +1,7 @@
 const { getURLs } = require('./listURLs');
 const { downloadEvent, downloadSingle } = require('./singleFile');
 const logUpdate = require('log-update');
-
+const { changeDestination, openDownloads } = require('./options');
 
 //algorithm:
 /*
@@ -52,24 +52,30 @@ downloadEvent.on('downloading', (progressPool) => {
 
 (() => {
   // {id: filename, {total: , current: }}
-  console.log('*Disclaimer: possible 1% data loss*');
   let progressPool = new Map();
   const args = process.argv;
   const argsLen = process.argv.length;
   switch (argsLen) {
     case 3:
-      downloadSingle(args[2], progressPool);
+      if (args[2] === 'ddir') {
+        openDownloads();
+      } else {
+        downloadSingle(args[2], progressPool);
+      }
       break;
     case 4: {
       if (args[2] === '--list') {
         downloadList(args[3], progressPool);
+      } else if (args[2] === '--cdir') {
+        changeDestination(args[3]);
       }
       break;
     } case 6: {
+      console.log('*Disclaimer: possible 1% data loss*');
       if (args[2] === '--list' && args[4] === '-r') {
         const [_start, _stop] = args[5].split(',');
         downloadList(args[3], progressPool, {start: _start, stop: _stop});
-      } 
+      }
       break;
     }
     default:
