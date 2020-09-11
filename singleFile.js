@@ -38,28 +38,32 @@ const getError = (status, err) => {
 }
 
 const downloadFile = (data, dataLen, progressPool) => {
-  https.get(getDownloadURL(data, dataLen), async res => {
-    if (getError(res.statusCode, 'Cannot download file')) return;
-    const fileName = getFileName(data, dataLen);
-    const path = `${dldata['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
-    fs.closeSync(fs.openSync(path, 'w'));
-    let mp3File = fs.createWriteStream(path);
-    res.pipe(mp3File);
-    
-    let total = getFileSize(data, dataLen);
-    let size = 0;
-    res.on('data', async chunk => {
-      size += chunk.length;
-      await progressPool.set(fileName, {
-        total: total,
-        current: bytesToMB(size)
+  const dlLink = getDownloadURL(data, dataLen);
+  try {
+    https.get(dlLink, res => {
+      const fileName = getFileName(data, dataLen);
+      const path = `${dldata['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+      fs.closeSync(fs.openSync(path, 'w'));
+      let mp3File = fs.createWriteStream(path);
+      res.pipe(mp3File);
+      
+      let total = getFileSize(data, dataLen);
+      let size = 0;
+      res.on('data', async chunk => {
+        size += chunk.length;
+        await progressPool.set(fileName, {
+          total: total,
+          current: bytesToMB(size)
+        });
+        event.emit('downloading', progressPool);
       });
-      event.emit('downloading', progressPool);
+      res.on('end', () => {
+        event.emit('completed');
+      });
     });
-    res.on('end', () => {
-      event.emit('completed');
-    });
-  });
+  } catch {
+    console.log(`Cannot get ${dlLink}`);
+  }
 }
 
 //download 1 file
@@ -85,7 +89,7 @@ module.exports = {
         });
       });
     } catch(err) {
-      console.log(`Error with 320youtube id: ${err}`);
+      console.log(`Error with 320youtube id`);
     }
   }
 };
