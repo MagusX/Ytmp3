@@ -50,6 +50,18 @@ downloadEvent.on('downloading', (progressPool) => {
   logUpdate(log);
 });
 
+const helpCmd = () => {
+  console.log(`node ytmp3 [args]\n
+options:
+${' ddir'.padEnd(20)}Show and open download directory
+${' <video-id>'.padEnd(20)}Download video with ID
+
+flags: [--list] <arg> [[-r] <arg>,<arg>]
+${' --list'.padEnd(20)}Download playlist with ID
+${' -r'.padEnd(20)}Range of downloads -r start,stop
+  `);
+}
+
 (() => {
   // {id: filename, {total: , current: }}
   let progressPool = new Map();
@@ -59,6 +71,8 @@ downloadEvent.on('downloading', (progressPool) => {
     case 3:
       if (args[2] === 'ddir') {
         openDownloads();
+      } else if (args[2] === 'help') {
+        helpCmd();
       } else {
         downloadSingle(args[2], progressPool);
       }
