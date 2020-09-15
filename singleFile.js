@@ -71,7 +71,7 @@ module.exports = {
   downloadEvent: event,
   downloadSingle: (id, progress) => {
     try {
-      https.get(`https://www.320youtube.com/v6/watch?v=${id}`, res => {
+      https.get(`${dldata['downloader-url']}/watch?v=${id}`, res => {
         res.on('error', err => {
           console.log(`Error with 320youtube id: ${err}`);
         });

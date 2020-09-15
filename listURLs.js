@@ -1,4 +1,5 @@
 const https = require('https');
+const dldata = require('./log/data.json');
 
 const verifyRange = (totalResults, range) => {
   let { start, stop } = (typeof(range) === 'object') ? range : {start: 0, stop: totalResults};
@@ -34,7 +35,7 @@ const getPageToken = apiRes => {
 
 const getAPIRes = async (playlistId, prevApiRes, api_key, URLs, range) => {
   return new Promise((resolve, reject) => {
-    https.get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${api_key}&maxResults=50&pageToken=${getPageToken(prevApiRes)}`, res => {
+    https.get(`${dldata['youtube-api-url']}/playlistItems?part=snippet&playlistId=${playlistId}&key=${api_key}&maxResults=50&pageToken=${getPageToken(prevApiRes)}`, res => {
       res.on('error', err => {
         console.log(`Error with googleapis url: ${err}`);
       });
@@ -63,7 +64,7 @@ module.exports = {
   getURLs: async (playlistId, range) => {
     let URLs = [];
     let apiRes;
-    const api_key = 'AIzaSyCPuak_xz0_qEyST0yj9T0DIFkUtBhfCuo';
+    const api_key = dldata['youtube-api-key'];
     while (true) {
       apiRes = await getAPIRes(playlistId, apiRes, api_key, URLs, range);
       if (!apiRes.hasOwnProperty('nextPageToken')) {
