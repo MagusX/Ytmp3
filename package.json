@@ -1,6 +1,6 @@
 {
   "name": "ytmp3",
-  "version": "1.0.0",
+  "version": "0.4.3",
   "description": "Youtube 320kbps mp3 downloader",
   "main": "ytmp3.js",
   "scripts": {

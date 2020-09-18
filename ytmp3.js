@@ -18,9 +18,12 @@ function(url, max):
   }
 */
 
+let len;
+let tail;
+
 const throttleDownload = (urls, max=4, progressPool) => {
-  const len = urls.length;
-  let tail = (len <= max) ? len : max;
+  len = urls.length;
+  tail = (len <= max) ? len : max;
 
   downloadEvent.on('completed', () => {
     if (tail != len) {
@@ -47,7 +50,7 @@ downloadEvent.on('downloading', (progressPool) => {
     let {current, total} = value;
     log += `${key} [${current}/${total}] ${Math.floor((current / total) * 100)}%\n`;
   }
-  logUpdate(log);
+  logUpdate(log + `\nProgress: ${tail}/${len}`);
 });
 
 const helpCmd = () => {
@@ -56,7 +59,7 @@ options:
 ${' ddir'.padEnd(20)}Show and open download directory
 ${' <video-id>'.padEnd(20)}Download video with ID
 
-flags: [--list] <arg> [[-r] <arg>,<arg>]
+flags: [--list] <list-id> [[-r] <start>,<stop>]
 ${' --list'.padEnd(20)}Download playlist with ID
 ${' -r'.padEnd(20)}Range of downloads -r start,stop
   `);

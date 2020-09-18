@@ -1,7 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 const { EventEmitter } = require('events');
-const dldata = require('./log/data.json');
+const cfg = require('./data/config.json');
 
 const event = new EventEmitter();
 
@@ -42,7 +42,7 @@ const downloadFile = (data, dataLen, progressPool) => {
   try {
     https.get(dlLink, res => {
       const fileName = getFileName(data, dataLen);
-      const path = `${dldata['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+      const path = `${cfg['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
       fs.closeSync(fs.openSync(path, 'w'));
       let mp3File = fs.createWriteStream(path);
       res.pipe(mp3File);
@@ -71,7 +71,7 @@ module.exports = {
   downloadEvent: event,
   downloadSingle: (id, progress) => {
     try {
-      https.get(`${dldata['downloader-url']}/watch?v=${id}`, res => {
+      https.get(`${cfg['downloader-url']}/v${cfg['downloader-version']}/watch?v=${id}`, res => {
         res.on('error', err => {
           console.log(`Error with 320youtube id: ${err}`);
         });

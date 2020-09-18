@@ -1,12 +1,12 @@
 const fs = require('fs');
-const dataPath = './log/data.json';
-const dlData = require(dataPath);
+const cfgPath = './data/config.json';
+const cfg = require(cfgPath);
 
 module.exports = {
   changeDestination: destination => {
     if (fs.existsSync(destination)) {
-      dlData['download-path'] = destination;
-      fs.writeFile(dataPath, JSON.stringify(dlData, null, 2), err => {
+      cfg['download-path'] = destination;
+      fs.writeFile(cfgPath, JSON.stringify(cfg, null, 2), err => {
         if (err) console.error(err);
         else console.log(`Download folder: ${destination}`);
       });
@@ -14,7 +14,7 @@ module.exports = {
   },
 
   openDownloads: () => {
-    console.log(dlData['download-path']);
-    require('child_process').exec(`start ${dlData['download-path']}`);
+    console.log(cfg['download-path']);
+    require('child_process').exec(`start ${cfg['download-path']}`);
   } 
 }
