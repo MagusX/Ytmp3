@@ -2,6 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const { EventEmitter } = require('events');
 const cfg = require('./data/config.json');
+const settings = require('./settings.json');
 
 const event = new EventEmitter();
 
@@ -42,7 +43,7 @@ const downloadFile = (data, dataLen, progressPool) => {
   try {
     https.get(dlLink, res => {
       const fileName = getFileName(data, dataLen);
-      const path = `${cfg['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
+      const path = `${settings['download-path']}/${fileName.replace(/[:*?"<>|,\/\\]/g, '')}.mp3`;
       fs.closeSync(fs.openSync(path, 'w'));
       let mp3File = fs.createWriteStream(path);
       res.pipe(mp3File);

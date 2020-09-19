@@ -4,7 +4,8 @@
   "description": "Youtube 320kbps mp3 downloader",
   "main": "ytmp3.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ytmp3.js",
+    "build": "pkg"
   },
   "author": "Brian Doan",
   "license": "ISC",
