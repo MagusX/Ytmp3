@@ -2,7 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const { EventEmitter } = require('events');
 const cfg = require('./data/config.json');
-const settings = require('./settings.json');
+const settings = require(`${require('process').cwd()}/settings.json`);
 
 const event = new EventEmitter();
 

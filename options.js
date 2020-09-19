@@ -1,12 +1,12 @@
 const fs = require('fs');
-const settingsPath = './settings.json';
-const settings = require(settingsPath);
+const settingsPath = '/settings.json';
+const settings = require(`${require('process').cwd()}${settingsPath}`);
 
 module.exports = {
   changeDestination: destination => {
     if (fs.existsSync(destination)) {
       settings['download-path'] = destination;
-      fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), err => {
+      fs.writeFile(`.${settingsPath}`, JSON.stringify(settings, null, 2), err => {
         if (err) console.error(err);
         else console.log(`Download folder: ${destination}`);
       });
