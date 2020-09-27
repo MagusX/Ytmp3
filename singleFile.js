@@ -70,9 +70,9 @@ const downloadFile = (data, dataLen, progressPool) => {
 //download 1 file
 module.exports = {
   downloadEvent: event,
-  downloadSingle: (id, progress) => {
+  downloadSingle: (id, progress, ver) => {
     try {
-      https.get(`${cfg['downloader-url']}/v${cfg['downloader-version']}/watch?v=${id}`, res => {
+      https.get(`${cfg['downloader-url']}/v${ver}/watch?v=${id}`, res => {
         res.on('error', err => {
           console.log(`Error with 320youtube id: ${err}`);
         });
